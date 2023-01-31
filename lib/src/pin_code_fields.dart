@@ -309,6 +309,7 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
   late Animation<Offset> _offsetAnimation;
 
   late Animation<double> _cursorAnimation;
+
   DialogConfig get _dialogConfig => widget.dialogConfig == null
       ? DialogConfig()
       : DialogConfig(
@@ -317,6 +318,7 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
           dialogTitle: widget.dialogConfig!.dialogTitle,
           negativeText: widget.dialogConfig!.negativeText,
         );
+
   PinTheme get _pinTheme => widget.pinTheme;
 
   Timer? _blinkDebounce;
@@ -446,7 +448,7 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
 
   // Assigning the text controller, if empty assigning a new one.
   void _assignController() {
-      _textEditingController =  widget.controller ?? TextEditingController();
+    _textEditingController = widget.controller ?? TextEditingController();
 
     _textEditingController?.addListener(() {
       if (widget.useHapticFeedback) {
@@ -473,7 +475,7 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
                 () => widget.onCompleted!(currentText));
           }
 
-          if (widget.autoDismissKeyboard) _focusNode!.unfocus();
+          // if (widget.autoDismissKeyboard) _focusNode!.unfocus();
         }
         widget.onChanged?.call(currentText);
       }
@@ -765,7 +767,7 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
           // trigger on the complete event handler from the keyboard
           onFieldSubmitted: widget.onSubmitted,
           onEditingComplete: widget.onEditingComplete,
-          enableInteractiveSelection: false,
+          enableInteractiveSelection: true,
           showCursor: false,
           // using same as background color so tha it can blend into the view
           cursorWidth: 0.01,
@@ -803,45 +805,21 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: <Widget>[
-            AbsorbPointer(
-              // this is a hidden textfield under the pin code fields.
-              absorbing: true, // it prevents on tap on the text field
-              child: widget.useExternalAutoFillGroup
-                  ? textField
-                  : AutofillGroup(
-                      onDisposeAction: widget.onAutoFillDisposeAction,
-                      child: textField,
-                    ),
-            ),
             Positioned(
               top: 0,
               left: 0,
               right: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (widget.onTap != null) widget.onTap!();
-                  _onFocus();
-                },
-                onLongPress: widget.enabled
-                    ? () async {
-                        var data = await Clipboard.getData("text/plain");
-                        if (data?.text?.isNotEmpty ?? false) {
-                          if (widget.beforeTextPaste != null) {
-                            if (widget.beforeTextPaste!(data!.text)) {
-                              _showPasteDialog(data.text!);
-                            }
-                          } else {
-                            _showPasteDialog(data!.text!);
-                          }
-                        }
-                      }
-                    : null,
-                child: Row(
-                  mainAxisAlignment: widget.mainAxisAlignment,
-                  children: _generateFields(),
-                ),
+              child: Row(
+                mainAxisAlignment: widget.mainAxisAlignment,
+                children: _generateFields(),
               ),
             ),
+            widget.useExternalAutoFillGroup
+                ? textField
+                : AutofillGroup(
+                    onDisposeAction: widget.onAutoFillDisposeAction,
+                    child: textField,
+                  ),
           ],
         ),
       ),
@@ -923,20 +901,21 @@ class _PinCodeTextFieldState extends State<PinCodeTextField>
     return result;
   }
 
-  void _onFocus() {
-    if (widget.autoUnfocus) {
-      if (_focusNode!.hasFocus &&
-          MediaQuery.of(widget.appContext).viewInsets.bottom == 0) {
-        _focusNode!.unfocus();
-        Future.delayed(
-            const Duration(microseconds: 1), () => _focusNode!.requestFocus());
-      } else {
-        _focusNode!.requestFocus();
-      }
-    } else {
-      _focusNode!.requestFocus();
-    }
-  }
+  //
+  // void _onFocus() {
+  //   if (widget.autoUnfocus) {
+  //     if (_focusNode!.hasFocus &&
+  //         MediaQuery.of(widget.appContext).viewInsets.bottom == 0) {
+  //       _focusNode!.unfocus();
+  //       Future.delayed(
+  //           const Duration(microseconds: 1), () => _focusNode!.requestFocus());
+  //     } else {
+  //       _focusNode!.requestFocus();
+  //     }
+  //   } else {
+  //     _focusNode!.requestFocus();
+  //   }
+  // }
 
   void _setTextToInput(String data) async {
     var replaceInputList = List<String>.filled(widget.length, "");
